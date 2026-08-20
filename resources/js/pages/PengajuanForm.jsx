@@ -1,4 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
 
 const STEPS = ['Konsumen', 'Kendaraan', 'Pinjaman & Dokumen'];
 const DOC_AWAL = [
@@ -31,15 +35,13 @@ function money(value) {
     return Number(value);
 }
 
-export default function PengajuanForm({ mode, pengajuanId }) {
+export default function PengajuanForm({ mode, pengajuanId, onSaved, onSubmitted }) {
     const [step, setStep] = useState(0);
     const [form, setForm] = useState(emptyForm);
     const [dealers, setDealers] = useState([]);
     const [id, setId] = useState(pengajuanId || '');
     const [dokumens, setDokumens] = useState([]);
     const [files, setFiles] = useState({});
-    const selectRef = useRef(null);
-    const selectizeRef = useRef(null);
     const user = window.authUser || {};
     const isDealer = user.role === 'dealer';
 
@@ -58,67 +60,50 @@ export default function PengajuanForm({ mode, pengajuanId }) {
             success: (res) => setDealers(res),
             error: window.ajaxError,
         });
-
-        if (mode === 'edit' && pengajuanId) {
-            window.showLoader();
-            window.$.ajax({
-                url: `/pengajuan/${pengajuanId}/json`,
-                type: 'GET',
-                success: (res) => {
-                    setId(String(res.id));
-                    setForm({
-                        dealer_id: res.dealer_id ? String(res.dealer_id) : '',
-                        konsumen_nama: res.konsumen_nama || '',
-                        konsumen_nik: res.konsumen_nik || '',
-                        konsumen_tgl_lahir: res.konsumen_tgl_lahir || '',
-                        status_perkawinan: res.status_perkawinan || 'belum_menikah',
-                        data_pasangan: res.data_pasangan || '',
-                        merk_kendaraan: res.merk_kendaraan || '',
-                        model_kendaraan: res.model_kendaraan || '',
-                        tipe_kendaraan: res.tipe_kendaraan || '',
-                        warna_kendaraan: res.warna_kendaraan || '',
-                        harga_kendaraan: res.harga_kendaraan || '',
-                        asuransi: res.asuransi || 'All Risk',
-                        down_payment: res.down_payment || '',
-                        lama_kredit: String(res.lama_kredit || 12),
-                        angsuran: res.angsuran || '',
-                    });
-                    setDokumens(res.dokumens || []);
-                },
-                error: window.ajaxError,
-                complete: window.hideLoader,
-            });
-        }
-    }, [mode, pengajuanId]);
+    }, []);
 
     useEffect(() => {
-        if (isDealer || !selectRef.current || !window.$) return undefined;
-        if (selectizeRef.current) {
-            selectizeRef.current.destroy();
-            selectizeRef.current = null;
+        setStep(0);
+        setFiles({});
+        setDokumens([]);
+        setId(pengajuanId || '');
+        setForm(emptyForm);
+
+        if (mode !== 'edit' || !pengajuanId) {
+            return undefined;
         }
-        const $el = window.$(selectRef.current);
-        $el.selectize({
-            placeholder: 'Pilih dealer',
-            onChange: (value) => setForm((prev) => ({ ...prev, dealer_id: value })),
+
+        window.showLoader();
+        window.$.ajax({
+            url: `/pengajuan/${pengajuanId}/json`,
+            type: 'GET',
+            success: (res) => {
+                setId(String(res.id));
+                setForm({
+                    dealer_id: res.dealer_id ? String(res.dealer_id) : '',
+                    konsumen_nama: res.konsumen_nama || '',
+                    konsumen_nik: res.konsumen_nik || '',
+                    konsumen_tgl_lahir: res.konsumen_tgl_lahir || '',
+                    status_perkawinan: res.status_perkawinan || 'belum_menikah',
+                    data_pasangan: res.data_pasangan || '',
+                    merk_kendaraan: res.merk_kendaraan || '',
+                    model_kendaraan: res.model_kendaraan || '',
+                    tipe_kendaraan: res.tipe_kendaraan || '',
+                    warna_kendaraan: res.warna_kendaraan || '',
+                    harga_kendaraan: res.harga_kendaraan || '',
+                    asuransi: res.asuransi || 'All Risk',
+                    down_payment: res.down_payment || '',
+                    lama_kredit: String(res.lama_kredit || 12),
+                    angsuran: res.angsuran || '',
+                });
+                setDokumens(res.dokumens || []);
+            },
+            error: window.ajaxError,
+            complete: window.hideLoader,
         });
-        selectizeRef.current = $el[0].selectize;
-        if (form.dealer_id) {
-            selectizeRef.current.setValue(form.dealer_id, true);
-        }
-        return () => {
-            if (selectizeRef.current) {
-                selectizeRef.current.destroy();
-                selectizeRef.current = null;
-            }
-        };
-    }, [dealers, isDealer]);
 
-    useEffect(() => {
-        if (selectizeRef.current && form.dealer_id) {
-            selectizeRef.current.setValue(form.dealer_id, true);
-        }
-    }, [form.dealer_id]);
+        return undefined;
+    }, [mode, pengajuanId]);
 
     const setField = (name, value) => setForm((prev) => ({ ...prev, [name]: value }));
 
@@ -134,7 +119,7 @@ export default function PengajuanForm({ mode, pengajuanId }) {
             return window.$.Deferred().resolve().promise();
         }
 
-        const chain = jobs.reduce((promise, [tipe, file]) => promise.then(() => {
+        return jobs.reduce((promise, [tipe, file]) => promise.then(() => {
             const data = new FormData();
             data.append('tipe', tipe);
             data.append('file', file);
@@ -146,8 +131,6 @@ export default function PengajuanForm({ mode, pengajuanId }) {
                 contentType: false,
             });
         }), window.$.Deferred().resolve().promise());
-
-        return chain;
     };
 
     const saveDraft = (thenSubmit = false) => {
@@ -167,8 +150,9 @@ export default function PengajuanForm({ mode, pengajuanId }) {
                                 url: `/pengajuan/${savedId}/submit`,
                                 type: 'POST',
                                 success: (submitRes) => {
+                                    window.hideLoader();
                                     window.toastr.success(submitRes.message);
-                                    window.location.href = `/pengajuan/${savedId}`;
+                                    if (onSubmitted) onSubmitted(savedId);
                                 },
                                 error: (xhr) => {
                                     window.hideLoader();
@@ -179,9 +163,7 @@ export default function PengajuanForm({ mode, pengajuanId }) {
                         }
                         window.hideLoader();
                         window.toastr.success(res.message);
-                        if (!isUpdate) {
-                            window.history.replaceState({}, '', `/pengajuan/${savedId}/edit`);
-                        }
+                        if (onSaved) onSaved(savedId);
                     })
                     .fail((xhr) => {
                         window.hideLoader();
@@ -195,13 +177,14 @@ export default function PengajuanForm({ mode, pengajuanId }) {
         });
     };
 
-    const inputClass = 'w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-navy-700';
-
     return (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:p-6">
-            <ol className="mb-6 grid grid-cols-3 gap-2">
+        <div className="space-y-5">
+            <ol className="grid grid-cols-3 gap-2">
                 {STEPS.map((label, index) => (
-                    <li key={label} className={`rounded-xl px-3 py-2 text-center text-sm ${index === step ? 'bg-navy-900 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                    <li
+                        key={label}
+                        className={`rounded-lg px-3 py-2 text-center text-xs font-medium sm:text-sm ${index === step ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+                    >
                         {index + 1}. {label}
                     </li>
                 ))}
@@ -209,30 +192,30 @@ export default function PengajuanForm({ mode, pengajuanId }) {
 
             {step === 0 && (
                 <div className="grid gap-4 md:grid-cols-2">
-                    <div className="md:col-span-2">
-                        <label className="mb-1 block text-sm font-medium">Nama konsumen</label>
-                        <input className={inputClass} value={form.konsumen_nama} onChange={(e) => setField('konsumen_nama', e.target.value)} />
+                    <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="konsumen_nama">Nama konsumen</Label>
+                        <Input id="konsumen_nama" value={form.konsumen_nama} onChange={(e) => setField('konsumen_nama', e.target.value)} />
                     </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium">NIK</label>
-                        <input className={inputClass} maxLength={16} value={form.konsumen_nik} onChange={(e) => setField('konsumen_nik', e.target.value.replace(/\D/g, ''))} />
+                    <div className="space-y-2">
+                        <Label htmlFor="konsumen_nik">NIK</Label>
+                        <Input id="konsumen_nik" maxLength={16} value={form.konsumen_nik} onChange={(e) => setField('konsumen_nik', e.target.value.replace(/\D/g, ''))} />
                     </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium">Tanggal lahir</label>
-                        <input type="date" className={inputClass} value={form.konsumen_tgl_lahir} onChange={(e) => setField('konsumen_tgl_lahir', e.target.value)} />
+                    <div className="space-y-2">
+                        <Label htmlFor="konsumen_tgl_lahir">Tanggal lahir</Label>
+                        <Input id="konsumen_tgl_lahir" type="date" value={form.konsumen_tgl_lahir} onChange={(e) => setField('konsumen_tgl_lahir', e.target.value)} />
                     </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium">Status perkawinan</label>
-                        <select className={inputClass} value={form.status_perkawinan} onChange={(e) => setField('status_perkawinan', e.target.value)}>
+                    <div className="space-y-2">
+                        <Label htmlFor="status_perkawinan">Status perkawinan</Label>
+                        <Select id="status_perkawinan" value={form.status_perkawinan} onChange={(e) => setField('status_perkawinan', e.target.value)}>
                             <option value="belum_menikah">Belum menikah</option>
                             <option value="menikah">Menikah</option>
                             <option value="cerai">Cerai</option>
-                        </select>
+                        </Select>
                     </div>
                     {form.status_perkawinan === 'menikah' && (
-                        <div>
-                            <label className="mb-1 block text-sm font-medium">Data pasangan</label>
-                            <input className={inputClass} value={form.data_pasangan} onChange={(e) => setField('data_pasangan', e.target.value)} />
+                        <div className="space-y-2">
+                            <Label htmlFor="data_pasangan">Data pasangan</Label>
+                            <Input id="data_pasangan" value={form.data_pasangan} onChange={(e) => setField('data_pasangan', e.target.value)} />
                         </div>
                     )}
                 </div>
@@ -240,38 +223,38 @@ export default function PengajuanForm({ mode, pengajuanId }) {
 
             {step === 1 && (
                 <div className="grid gap-4 md:grid-cols-2">
-                    <div className="md:col-span-2">
-                        <label className="mb-1 block text-sm font-medium">Dealer</label>
+                    <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="dealer_id">Dealer</Label>
                         {isDealer ? (
-                            <input className={inputClass} disabled value={dealers.find((d) => String(d.id) === String(user.dealer_id))?.nama || 'Dealer Anda'} />
+                            <Input disabled value={dealers.find((d) => String(d.id) === String(user.dealer_id))?.nama || 'Dealer Anda'} />
                         ) : (
-                            <select ref={selectRef} defaultValue={form.dealer_id}>
+                            <Select id="dealer_id" value={form.dealer_id} onChange={(e) => setField('dealer_id', e.target.value)}>
                                 <option value="">Pilih dealer</option>
                                 {dealers.map((dealer) => (
                                     <option key={dealer.id} value={dealer.id}>{dealer.nama}</option>
                                 ))}
-                            </select>
+                            </Select>
                         )}
                     </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium">Merk</label>
-                        <input className={inputClass} value={form.merk_kendaraan} onChange={(e) => setField('merk_kendaraan', e.target.value)} />
+                    <div className="space-y-2">
+                        <Label htmlFor="merk_kendaraan">Merk</Label>
+                        <Input id="merk_kendaraan" value={form.merk_kendaraan} onChange={(e) => setField('merk_kendaraan', e.target.value)} />
                     </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium">Model</label>
-                        <input className={inputClass} value={form.model_kendaraan} onChange={(e) => setField('model_kendaraan', e.target.value)} />
+                    <div className="space-y-2">
+                        <Label htmlFor="model_kendaraan">Model</Label>
+                        <Input id="model_kendaraan" value={form.model_kendaraan} onChange={(e) => setField('model_kendaraan', e.target.value)} />
                     </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium">Tipe</label>
-                        <input className={inputClass} value={form.tipe_kendaraan} onChange={(e) => setField('tipe_kendaraan', e.target.value)} />
+                    <div className="space-y-2">
+                        <Label htmlFor="tipe_kendaraan">Tipe</Label>
+                        <Input id="tipe_kendaraan" value={form.tipe_kendaraan} onChange={(e) => setField('tipe_kendaraan', e.target.value)} />
                     </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium">Warna</label>
-                        <input className={inputClass} value={form.warna_kendaraan} onChange={(e) => setField('warna_kendaraan', e.target.value)} />
+                    <div className="space-y-2">
+                        <Label htmlFor="warna_kendaraan">Warna</Label>
+                        <Input id="warna_kendaraan" value={form.warna_kendaraan} onChange={(e) => setField('warna_kendaraan', e.target.value)} />
                     </div>
-                    <div className="md:col-span-2">
-                        <label className="mb-1 block text-sm font-medium">Harga kendaraan</label>
-                        <input type="number" min="0" className={inputClass} value={form.harga_kendaraan} onChange={(e) => setField('harga_kendaraan', e.target.value)} />
+                    <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="harga_kendaraan">Harga kendaraan</Label>
+                        <Input id="harga_kendaraan" type="number" min="0" value={form.harga_kendaraan} onChange={(e) => setField('harga_kendaraan', e.target.value)} />
                     </div>
                 </div>
             )}
@@ -279,40 +262,42 @@ export default function PengajuanForm({ mode, pengajuanId }) {
             {step === 2 && (
                 <div className="space-y-6">
                     <div className="grid gap-4 md:grid-cols-2">
-                        <div>
-                            <label className="mb-1 block text-sm font-medium">Asuransi</label>
-                            <select className={inputClass} value={form.asuransi} onChange={(e) => setField('asuransi', e.target.value)}>
+                        <div className="space-y-2">
+                            <Label htmlFor="asuransi">Asuransi</Label>
+                            <Select id="asuransi" value={form.asuransi} onChange={(e) => setField('asuransi', e.target.value)}>
                                 <option>All Risk</option>
                                 <option>TLO</option>
-                            </select>
+                            </Select>
                         </div>
-                        <div>
-                            <label className="mb-1 block text-sm font-medium">Down Payment</label>
-                            <input type="number" min="0" className={inputClass} value={form.down_payment} onChange={(e) => setField('down_payment', e.target.value)} />
+                        <div className="space-y-2">
+                            <Label htmlFor="down_payment">Down Payment</Label>
+                            <Input id="down_payment" type="number" min="0" value={form.down_payment} onChange={(e) => setField('down_payment', e.target.value)} />
                         </div>
-                        <div>
-                            <label className="mb-1 block text-sm font-medium">Lama kredit (bulan)</label>
-                            <select className={inputClass} value={form.lama_kredit} onChange={(e) => setField('lama_kredit', e.target.value)}>
-                                {[12, 24, 36, 48, 60].map((n) => <option key={n} value={n}>{n} bulan</option>)}
-                            </select>
+                        <div className="space-y-2">
+                            <Label htmlFor="lama_kredit">Lama kredit (bulan)</Label>
+                            <Select id="lama_kredit" value={form.lama_kredit} onChange={(e) => setField('lama_kredit', e.target.value)}>
+                                {[12, 24, 36, 48, 60].map((n) => (
+                                    <option key={n} value={n}>{n} bulan</option>
+                                ))}
+                            </Select>
                         </div>
-                        <div>
-                            <label className="mb-1 block text-sm font-medium">Angsuran / bulan</label>
-                            <input className={inputClass} readOnly value={angsuran ? `Rp ${angsuran.toLocaleString('id-ID')}` : '-'} />
+                        <div className="space-y-2">
+                            <Label>Angsuran / bulan</Label>
+                            <Input readOnly value={angsuran ? `Rp ${angsuran.toLocaleString('id-ID')}` : '-'} />
                         </div>
                     </div>
                     <div>
-                        <h3 className="font-semibold text-navy-900">Dokumen awal</h3>
-                        <p className="mb-3 text-sm text-slate-500">JPG, PNG, atau PDF. Maksimal 5 MB. Wajib lengkap sebelum submit.</p>
+                        <h3 className="text-sm font-semibold">Dokumen awal</h3>
+                        <p className="mb-3 text-sm text-muted-foreground">JPG, PNG, atau PDF. Maksimal 5 MB. Wajib lengkap sebelum submit.</p>
                         <div className="grid gap-3 md:grid-cols-2">
                             {DOC_AWAL.map((doc) => {
                                 const uploaded = dokumens.find((item) => item.tipe === doc.tipe);
                                 return (
-                                    <label key={doc.tipe} className="rounded-xl border border-dashed border-slate-300 p-4 text-sm">
+                                    <label key={doc.tipe} className="rounded-lg border border-dashed p-4 text-sm">
                                         <span className="font-medium">{doc.label}</span>
-                                        <input type="file" accept=".jpg,.jpeg,.png,.pdf" className="mt-2 block w-full text-xs" onChange={(e) => setFiles((prev) => ({ ...prev, [doc.tipe]: e.target.files[0] }))} />
+                                        <Input type="file" accept=".jpg,.jpeg,.png,.pdf" className="mt-2 h-auto py-1.5" onChange={(e) => setFiles((prev) => ({ ...prev, [doc.tipe]: e.target.files[0] }))} />
                                         {uploaded && <span className="mt-1 block text-xs text-emerald-700">Sudah ada: {uploaded.nama_asli}</span>}
-                                        {files[doc.tipe] && <span className="mt-1 block text-xs text-navy-700">Siap unggah: {files[doc.tipe].name}</span>}
+                                        {files[doc.tipe] && <span className="mt-1 block text-xs text-primary">Siap unggah: {files[doc.tipe].name}</span>}
                                     </label>
                                 );
                             })}
@@ -321,14 +306,14 @@ export default function PengajuanForm({ mode, pengajuanId }) {
                 </div>
             )}
 
-            <div className="mt-6 flex flex-wrap justify-between gap-3">
-                <button type="button" className="rounded-xl border px-4 py-2 text-sm" disabled={step === 0} onClick={() => setStep((s) => s - 1)}>Kembali</button>
+            <div className="flex flex-wrap justify-between gap-3">
+                <Button type="button" variant="outline" disabled={step === 0} onClick={() => setStep((s) => s - 1)}>Kembali</Button>
                 <div className="flex gap-2">
-                    <button type="button" className="rounded-xl border border-navy-900 px-4 py-2 text-sm font-semibold text-navy-900" onClick={() => saveDraft(false)}>Simpan Draft</button>
+                    <Button type="button" variant="outline" onClick={() => saveDraft(false)}>Simpan Draft</Button>
                     {step < 2 ? (
-                        <button type="button" className="rounded-xl bg-navy-900 px-4 py-2 text-sm font-semibold text-white" onClick={() => setStep((s) => s + 1)}>Lanjut</button>
+                        <Button type="button" onClick={() => setStep((s) => s + 1)}>Lanjut</Button>
                     ) : (
-                        <button type="button" className="rounded-xl bg-gold-500 px-4 py-2 text-sm font-semibold text-navy-950" onClick={() => saveDraft(true)}>Kirim Pengajuan</button>
+                        <Button type="button" variant="gold" onClick={() => saveDraft(true)}>Kirim Pengajuan</Button>
                     )}
                 </div>
             </div>

@@ -54,9 +54,9 @@ export default function Dashboard() {
                 <h3 className="font-semibold text-navy-900">Langkah cepat</h3>
                 <div className="mt-4 grid gap-3 md:grid-cols-3">
                     {(role === 'dealer' || role === 'marketing') && (
-                        <a href="/pengajuan/create" className="rounded-xl border border-slate-200 p-4 hover:border-gold-500">
+                        <a href="/pengajuan" className="rounded-xl border border-slate-200 p-4 hover:border-gold-500">
                             <p className="font-medium text-navy-900">Buat pengajuan</p>
-                            <p className="mt-1 text-sm text-slate-500">Input data konsumen, kendaraan, dan unggah berkas.</p>
+                            <p className="mt-1 text-sm text-slate-500">Input data konsumen, kendaraan, dan unggah berkas lewat modal.</p>
                         </a>
                     )}
                     {role === 'atasan_marketing' && (

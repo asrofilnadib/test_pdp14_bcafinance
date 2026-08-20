@@ -23,22 +23,12 @@ class PengajuanController extends Controller
 
     public function create()
     {
-        if (! Auth::user()->canCreatePengajuan()) {
-            abort(403);
-        }
-
-        return view('pengajuan.form', ['mode' => 'create', 'pengajuanId' => null]);
+        return redirect('/pengajuan');
     }
 
     public function edit(int $id)
     {
-        $pengajuan = $this->findAccessible($id);
-
-        if (! $pengajuan->canEdit() || ! $this->ownsDraft($pengajuan, Auth::user())) {
-            abort(403, 'Pengajuan ini tidak dapat diubah.');
-        }
-
-        return view('pengajuan.form', ['mode' => 'edit', 'pengajuanId' => $pengajuan->id]);
+        return redirect('/pengajuan');
     }
 
     public function show(int $id)
@@ -121,6 +111,7 @@ class PengajuanController extends Controller
                     'status_label' => Pengajuan::statusLabel($row->status),
                     'tanggal' => $row->created_at?->format('d/m/Y H:i'),
                     'can_edit' => $row->canEdit() && $this->ownsDraft($row, $user),
+                    'can_delete' => $row->status === Pengajuan::STATUS_DRAFT && $this->ownsDraft($row, $user),
                 ];
             });
 

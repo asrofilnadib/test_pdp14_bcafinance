@@ -1,9 +1,13 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.jsx';
+@source '../**/*.js';
+
+@custom-variant dark (&:is(.dark *));
 
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
@@ -15,6 +19,49 @@
     --color-gold-400: #d4b44a;
     --color-gold-500: #c9a227;
     --color-gold-600: #a8861c;
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+}
+
+:root {
+    --radius: 0.65rem;
+    --background: #ffffff;
+    --foreground: #1e293b;
+    --card: #ffffff;
+    --card-foreground: #1e293b;
+    --popover: #ffffff;
+    --popover-foreground: #1e293b;
+    --primary: #102844;
+    --primary-foreground: #f8fafc;
+    --secondary: #eef2f7;
+    --secondary-foreground: #102844;
+    --muted: #eef2f7;
+    --muted-foreground: #64748b;
+    --accent: #f6e7b0;
+    --accent-foreground: #102844;
+    --destructive: #b42318;
+    --border: #d5deea;
+    --input: #d5deea;
+    --ring: #1d4a7a;
 }
 
 body {
@@ -28,7 +75,7 @@ body {
     position: fixed;
     inset: 0;
     background: rgba(11, 28, 51, 0.45);
-    z-index: 80;
+    z-index: 100;
     align-items: center;
     justify-content: center;
 }
@@ -103,24 +150,8 @@ table.dataTable tbody tr:hover {
     border-radius: 6px !important;
 }
 
-.selectize-control {
-    width: 100%;
-}
-
-.selectize-input {
-    border: 1px solid #d5deea !important;
-    border-radius: 10px !important;
-    padding: 10px 12px !important;
-    box-shadow: none !important;
-    min-height: 46px;
-}
-
-.selectize-input.focus {
-    border-color: #1d4a7a !important;
-}
-
 .toast-success {
-    background-color: #1d4a7a !important;
+    background-color: #102844 !important;
 }
 
 .toast-error {

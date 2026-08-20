@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import Dashboard from './pages/Dashboard';
-import PengajuanForm from './pages/PengajuanForm';
+import PengajuanList from './pages/PengajuanList';
 import PengajuanDetail from './pages/PengajuanDetail';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -17,8 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    if (page === 'pengajuan-form') {
-        root.render(<PengajuanForm mode={el.dataset.mode} pengajuanId={el.dataset.id || ''} />);
+    if (page === 'pengajuan-list') {
+        root.render(<PengajuanList canCreate={el.dataset.canCreate === '1'} />);
         return;
     }
 
