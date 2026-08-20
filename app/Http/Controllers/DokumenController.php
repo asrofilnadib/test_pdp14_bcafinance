@@ -99,8 +99,9 @@ class DokumenController extends Controller
             abort(404, 'File tidak ditemukan.');
         }
 
-        return $disk->response($dokumen->path, $dokumen->nama_asli, [
+        return response()->file($disk->path($dokumen->path), [
             'Content-Type' => $dokumen->mime ?: 'application/octet-stream',
+            'Content-Disposition' => 'inline; filename="'.$dokumen->nama_asli.'"',
         ]);
     }
 

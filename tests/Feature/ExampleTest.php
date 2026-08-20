@@ -1,7 +1,13 @@
 <?php
 
-test('the application returns a successful response', function () {
+test('the application redirects guests to login', function () {
     $response = $this->get('/');
 
-    $response->assertStatus(200);
+    $response->assertRedirect('/login');
+});
+
+test('login page is accessible', function () {
+    $response = $this->get('/login');
+
+    $response->assertOk();
 });

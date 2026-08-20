@@ -65,13 +65,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/umd/photoswipe.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/umd/photoswipe-lightbox.umd.min.js"></script>
-    <script>
-        window.authUser = @json([
+    @php
+        $authUser = [
             'id' => auth()->id(),
             'name' => auth()->user()->name,
             'role' => auth()->user()->role,
             'dealer_id' => auth()->user()->dealer_id,
-        ]);
+        ];
+    @endphp
+    <script>
+        window.authUser = @json($authUser);
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),

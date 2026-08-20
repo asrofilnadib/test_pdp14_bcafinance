@@ -24,7 +24,7 @@
             </div>
             <div class="text-right text-sm">
                 <p class="font-semibold">{{ $pengajuan->nomor }}</p>
-                <p>{{ now()->translatedFormat('d F Y') }}</p>
+                <p>{{ now()->format('d/m/Y') }}</p>
             </div>
         </div>
         <div class="mt-6 space-y-4 text-sm leading-6">
