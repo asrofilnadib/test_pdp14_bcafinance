@@ -44,6 +44,7 @@
                     <li>marketing@jkl.test — Marketing</li>
                     <li>atasan@jkl.test — Atasan Marketing</li>
                     <li>admin@jkl.test — Admin Backoffice</li>
+                    <li>super@jkl.test — Super User</li>
                 </ul>
             </div>
         </div>

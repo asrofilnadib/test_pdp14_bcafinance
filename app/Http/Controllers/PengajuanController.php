@@ -246,7 +246,7 @@ class PengajuanController extends Controller
 
     public function approve(Request $request, int $id)
     {
-        if (! Auth::user()->isAtasan()) {
+        if (! Auth::user()->canApprove()) {
             return response()->json(['message' => 'Anda tidak memiliki akses.'], 403);
         }
 
@@ -273,7 +273,7 @@ class PengajuanController extends Controller
 
     public function reject(Request $request, int $id)
     {
-        if (! Auth::user()->isAtasan()) {
+        if (! Auth::user()->canApprove()) {
             return response()->json(['message' => 'Anda tidak memiliki akses.'], 403);
         }
 
@@ -311,7 +311,7 @@ class PengajuanController extends Controller
 
     public function markPrinted(int $id)
     {
-        if (! Auth::user()->isAdmin()) {
+        if (! Auth::user()->canPrintOrDisburse()) {
             return response()->json(['message' => 'Anda tidak memiliki akses.'], 403);
         }
 
@@ -351,7 +351,7 @@ class PengajuanController extends Controller
 
     public function disburse(int $id)
     {
-        if (! Auth::user()->isAdmin()) {
+        if (! Auth::user()->canPrintOrDisburse()) {
             return response()->json(['message' => 'Anda tidak memiliki akses.'], 403);
         }
 
@@ -451,6 +451,10 @@ class PengajuanController extends Controller
 
     private function ownsDraft(Pengajuan $pengajuan, User $user): bool
     {
+        if ($user->isSuperUser()) {
+            return true;
+        }
+
         if ($user->isDealer()) {
             return (int) $pengajuan->dealer_id === (int) $user->dealer_id;
         }

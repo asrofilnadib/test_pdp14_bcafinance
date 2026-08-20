@@ -169,6 +169,10 @@ class DokumenController extends Controller
 
     private function ownsDraft(Pengajuan $pengajuan, User $user): bool
     {
+        if ($user->isSuperUser()) {
+            return true;
+        }
+
         if ($user->isDealer()) {
             return (int) $pengajuan->dealer_id === (int) $user->dealer_id;
         }

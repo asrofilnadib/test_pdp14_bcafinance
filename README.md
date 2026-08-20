@@ -1,58 +1,229 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# JKL Finance — Digitalisasi Pengajuan Kredit Kendaraan
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi web untuk **PT. JKL** (soal coding PDP BCA Finance, nomor **2.A**). Proses penerimaan pengajuan kredit kendaraan yang tadinya manual (fotokopi, scan, print, routing kertas) dipindah ke sistem: input data, unggah dokumen, approval atasan, cetak kontrak/PO, unggah berkas TTD, sampai pencairan dana.
 
-## About Laravel
+## Soal 1 — Proses yang didigitalisasi
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Hampir seluruh langkah 1–9 bisa diimprove:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Langkah lama | Digitalisasi |
+|---|---|
+| Tukar dokumen fisik (KTP, SPK, bukti bayar, KK) | Upload ke sistem |
+| Form aplikasi kertas | Form web + simpan database |
+| Approval atasan via kertas | Approve / reject di aplikasi |
+| Print kontrak & PO manual | Generate dokumen digital lalu cetak |
+| TTD keliling fisik | Tracking status + upload berkas sudah TTD |
+| Pencairan dana tidak tercatat | Status pencairan + petugas + waktu |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Yang tetap di luar sistem: deal awal di dealer dan basah-tinta TTD di lapangan. Sistem hanya merekam hasilnya.
 
-## Learning Laravel
+```mermaid
+flowchart TB
+    subgraph eksternal [Eksternal - manual lama]
+        S1["1. Deal pembelian kendaraan"]
+        S1D["KTP / SPK / Bukti Bayar fisik"]
+        S2["2. Sales Dealer kirim info kredit"]
+        S1 --> S1D --> S2
+    end
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+    subgraph internal [Internal - manual lama]
+        S3["3. Marketing hubungi konsumen collect data"]
+        S4["4. Submit form kertas + berkas fisik"]
+        S5["5. Atasan Marketing approval kertas"]
+        S6["6. Admin print Kontrak dan PO"]
+        S7["7. TTD keliling Konsumen Marketing Dealer"]
+        S8["8. Kumpulkan berkas sudah TTD"]
+        S9["9. Pencairan dana manual"]
+        S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> S8 --> S9
+    end
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+    subgraph improve [Yang di-digitalisasi]
+        D14["Upload dokumen + form pengajuan web"]
+        D5["Approval digital Atasan Marketing"]
+        D6["Generate Kontrak dan PO digital"]
+        D78["Upload berkas TTD + status tracking"]
+        D9["Pencairan dana tercatat di sistem"]
+    end
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+    S1D -.-> D14
+    S3 -.-> D14
+    S4 -.-> D14
+    S5 -.-> D5
+    S6 -.-> D6
+    S7 -.-> D78
+    S8 -.-> D78
+    S9 -.-> D9
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## Soal 2 — Alur setelah digitalisasi
 
-## Contributing
+Peran: **Dealer**, **Marketing**, **Atasan Marketing**, **Admin Backoffice**. Konsumen tidak login.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Status: `draft` → `submitted` → `approved` / `rejected` → `printed` → `signed` → `disbursed`.
 
-## Code of Conduct
+```mermaid
+flowchart TB
+    Login["Login sesuai role"]
+    Input["Marketing atau Dealer input pengajuan"]
+    UploadAwal["Upload KTP SPK BuktiBayar KK"]
+    Draft["Status draft"]
+    Submit["Marketing submit pengajuan"]
+    Review["Atasan Marketing review"]
+    Reject["Status rejected + catatan"]
+    Approve["Status approved"]
+    PrintDoc["Admin generate Kontrak dan PO"]
+    Printed["Status printed"]
+    TTD["TTD di lapangan"]
+    UploadTTD["Upload dokumen sudah TTD"]
+    Signed["Status signed"]
+    Cair["Admin proses pencairan"]
+    Done["Status disbursed"]
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+    Login --> Input --> UploadAwal --> Draft --> Submit --> Review
+    Review -->|tolak| Reject
+    Review -->|setuju| Approve --> PrintDoc --> Printed --> TTD --> UploadTTD --> Signed --> Cair --> Done
+```
 
-## Security Vulnerabilities
+```mermaid
+erDiagram
+    users ||--o{ pengajuans : "marketing / approver / admin"
+    dealers ||--o{ pengajuans : punya
+    dealers ||--o{ users : "user dealer"
+    pengajuans ||--o{ dokumen_pengajuans : punya
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+    users {
+        bigint id PK
+        string name
+        string email
+        string role
+        bigint dealer_id FK
+    }
 
-## License
+    dealers {
+        bigint id PK
+        string nama
+        string alamat
+        string telepon
+    }
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+    pengajuans {
+        bigint id PK
+        string nomor
+        string status
+        bigint dealer_id FK
+        bigint marketing_id FK
+        string konsumen_nama
+        string konsumen_nik
+        decimal harga_kendaraan
+        decimal down_payment
+        int lama_kredit
+        decimal angsuran
+    }
+
+    dokumen_pengajuans {
+        bigint id PK
+        bigint pengajuan_id FK
+        string tipe
+        string path
+    }
+```
+
+## Stack
+
+- Laravel 13 (PHP 8.3)
+- React + Vite + Tailwind CSS 4
+- shadcn/ui (Dialog, AlertDialog, Button, Card, Badge)
+- MySQL 8
+- DataTables server-side, jQuery AJAX
+- Highcharts (dashboard)
+- SweetAlert2, Toastr, PhotoSwipe (CDN)
+
+Create/update pengajuan memakai **modal**, hapus memakai **konfirmasi modal**. List pengajuan paging/search/sort dikerjakan di server.
+
+## Hak akses
+
+| Peran | Yang bisa dilakukan |
+|---|---|
+| Dealer / Marketing | Buat pengajuan, ubah draft milik sendiri, unggah dokumen awal, unggah TTD |
+| Atasan Marketing | Review pengajuan `submitted`, approve / reject |
+| Admin Backoffice | Cetak kontrak & PO setelah approved, pencairan setelah signed |
+| Super User | Semua akses di atas, melihat seluruh pengajuan |
+
+## Cara jalanin (Docker)
+
+Paling gampang, tidak perlu install PHP/Node/MySQL di host:
+
+```bash
+docker compose up --build
+```
+
+Buka [http://localhost:8000](http://localhost:8000).
+
+Container `app` otomatis `migrate` + `seed` (bukan `migrate:fresh`). MySQL Docker di port **3307** supaya tidak tabrakan dengan MySQL lokal (3306).
+
+```bash
+docker compose down        # stop, data tetap
+docker compose down -v     # stop + hapus volume MySQL
+```
+
+## Cara jalanin (lokal)
+
+Kebutuhan: PHP 8.3, Composer, Node.js, MySQL.
+
+```bash
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+```
+
+Isi koneksi MySQL di `.env`:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=pdpbcaf
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Buat database `pdpbcaf`, lalu:
+
+```bash
+php artisan migrate
+php artisan db:seed
+php artisan serve
+```
+
+Terminal kedua:
+
+```bash
+npm run dev
+```
+
+Buka URL yang muncul (biasanya `http://localhost:8000`).
+
+Jangan pakai `migrate:fresh` / `migrate:refresh`.
+
+## Akun demo
+
+Password semua akun: `password`
+
+| Email | Peran |
+|---|---|
+| `dealer@jkl.test` | Dealer |
+| `marketing@jkl.test` | Marketing |
+| `atasan@jkl.test` | Atasan Marketing |
+| `admin@jkl.test` | Admin Backoffice |
+| `super@jkl.test` | Super User |
+
+## Alur uji singkat
+
+1. Login **marketing** → Pengajuan Baru (modal) → isi data + unggah KTP/SPK/bukti bayar/KK → Kirim Pengajuan.
+2. Login **atasan** → buka detail → Setujui / Tolak.
+3. Login **admin** → Cetak Kontrak & PO.
+4. Login **marketing** lagi → unggah kontrak & PO yang sudah TTD.
+5. Login **admin** → Pencairan Dana.
+
+Dashboard menampilkan kartu status plus chart Highcharts (kolom, pie, funnel, tren 6 bulan, bar per dealer).

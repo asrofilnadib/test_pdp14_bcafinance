@@ -58,10 +58,10 @@ export default function PengajuanDetail({ pengajuanId }) {
         return <Card><CardContent className="p-6 text-sm text-muted-foreground">Memuat detail...</CardContent></Card>;
     }
 
-    const canApprove = user.role === 'atasan_marketing' && data.status === 'submitted';
-    const canPrint = user.role === 'admin_backoffice' && ['approved', 'printed'].includes(data.status);
-    const canUploadTtd = ['dealer', 'marketing'].includes(user.role) && data.status === 'printed';
-    const canDisburse = user.role === 'admin_backoffice' && data.status === 'signed';
+    const canApprove = ['atasan_marketing', 'super_user'].includes(user.role) && data.status === 'submitted';
+    const canPrint = ['admin_backoffice', 'super_user'].includes(user.role) && ['approved', 'printed'].includes(data.status);
+    const canUploadTtd = ['dealer', 'marketing', 'super_user'].includes(user.role) && data.status === 'printed';
+    const canDisburse = ['admin_backoffice', 'super_user'].includes(user.role) && data.status === 'signed';
     const canDelete = data.can_edit && data.status === 'draft';
 
     const postAction = (url, payload, successText) => {

@@ -219,19 +219,19 @@ export default function Dashboard() {
             <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <h3 className="font-semibold text-navy-900">Langkah cepat</h3>
                 <div className="mt-4 grid gap-3 md:grid-cols-3">
-                    {(role === 'dealer' || role === 'marketing') && (
+                    {(role === 'dealer' || role === 'marketing' || role === 'super_user') && (
                         <a href="/pengajuan" className="rounded-xl border border-slate-200 p-4 hover:border-gold-500">
                             <p className="font-medium text-navy-900">Buat pengajuan</p>
                             <p className="mt-1 text-sm text-slate-500">Input data konsumen, kendaraan, dan unggah berkas lewat modal.</p>
                         </a>
                     )}
-                    {role === 'atasan_marketing' && (
+                    {(role === 'atasan_marketing' || role === 'super_user') && (
                         <a href="/pengajuan" className="rounded-xl border border-slate-200 p-4 hover:border-gold-500">
                             <p className="font-medium text-navy-900">Review pengajuan</p>
                             <p className="mt-1 text-sm text-slate-500">Setujui atau tolak pengajuan yang masuk.</p>
                         </a>
                     )}
-                    {role === 'admin_backoffice' && (
+                    {(role === 'admin_backoffice' || role === 'super_user') && (
                         <a href="/pengajuan" className="rounded-xl border border-slate-200 p-4 hover:border-gold-500">
                             <p className="font-medium text-navy-900">Cetak & cairkan</p>
                             <p className="mt-1 text-sm text-slate-500">Generate kontrak/PO lalu catat pencairan dana.</p>

@@ -70,6 +70,16 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        User::query()->updateOrCreate(
+            ['email' => 'super@jkl.test'],
+            [
+                'name' => 'Andi Super',
+                'password' => $password,
+                'role' => User::ROLE_SUPER,
+                'email_verified_at' => now(),
+            ]
+        );
+
         $samples = [
             ['status' => Pengajuan::STATUS_DRAFT, 'nama' => 'Andi Pratama', 'nik' => '3174010101990001', 'dealer' => $dealerHonda, 'marketing' => $marketing],
             ['status' => Pengajuan::STATUS_SUBMITTED, 'nama' => 'Dewi Lestari', 'nik' => '3174010202000002', 'dealer' => $dealerHonda, 'marketing' => $marketing],

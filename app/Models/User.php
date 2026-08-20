@@ -22,6 +22,7 @@ class User extends Authenticatable
     public const ROLE_MARKETING = 'marketing';
     public const ROLE_ATASAN = 'atasan_marketing';
     public const ROLE_ADMIN = 'admin_backoffice';
+    public const ROLE_SUPER = 'super_user';
 
     protected function casts(): array
     {
@@ -61,9 +62,24 @@ class User extends Authenticatable
         return $this->role === self::ROLE_ADMIN;
     }
 
+    public function isSuperUser(): bool
+    {
+        return $this->role === self::ROLE_SUPER;
+    }
+
     public function canCreatePengajuan(): bool
     {
-        return in_array($this->role, [self::ROLE_DEALER, self::ROLE_MARKETING], true);
+        return in_array($this->role, [self::ROLE_DEALER, self::ROLE_MARKETING, self::ROLE_SUPER], true);
+    }
+
+    public function canApprove(): bool
+    {
+        return $this->isAtasan() || $this->isSuperUser();
+    }
+
+    public function canPrintOrDisburse(): bool
+    {
+        return $this->isAdmin() || $this->isSuperUser();
     }
 
     public static function roleLabel(?string $role): string
@@ -73,6 +89,7 @@ class User extends Authenticatable
             self::ROLE_MARKETING => 'Marketing',
             self::ROLE_ATASAN => 'Atasan Marketing',
             self::ROLE_ADMIN => 'Admin Backoffice',
+            self::ROLE_SUPER => 'Super User',
             default => $role ?? '-',
         };
     }
