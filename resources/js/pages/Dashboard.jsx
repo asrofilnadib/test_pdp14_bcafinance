@@ -93,21 +93,15 @@ function renderCharts(stats) {
     }));
 
     charts.push(makeChart('chart-funnel', {
-        chart: { type: 'funnel' },
+        chart: { type: 'column' },
         title: { text: 'Funnel proses kredit' },
-        plotOptions: {
-            series: {
-                dataLabels: { enabled: true, format: '{point.name}: {point.y}', softConnector: true },
-                center: ['50%', '50%'],
-                neckWidth: '25%',
-                neckHeight: '20%',
-                width: '70%',
-            },
-        },
+        xAxis: { categories: FUNNEL_STEPS.map((item) => item.label) },
+        yAxis: { min: 0, title: { text: 'Jumlah' }, allowDecimals: false },
         legend: { enabled: false },
         series: [{
             name: 'Pengajuan',
-            data: FUNNEL_STEPS.map((item) => [item.label, counts[item.key] || 0]),
+            data: FUNNEL_STEPS.map((item) => counts[item.key] || 0),
+            color: '#102844',
         }],
     }));
 

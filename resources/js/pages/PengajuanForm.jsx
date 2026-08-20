@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+import FilePondField from '@/components/FilePondField';
 
 const STEPS = ['Konsumen', 'Kendaraan', 'Pinjaman & Dokumen'];
 const DOC_AWAL = [
@@ -293,12 +294,13 @@ export default function PengajuanForm({ mode, pengajuanPublicId, onSaved, onSubm
                             {DOC_AWAL.map((doc) => {
                                 const uploaded = dokumens.find((item) => item.tipe === doc.tipe);
                                 return (
-                                    <label key={doc.tipe} className="rounded-lg border border-dashed p-4 text-sm">
-                                        <span className="font-medium">{doc.label}</span>
-                                        <Input type="file" accept=".jpg,.jpeg,.png,.pdf" className="mt-2 h-auto py-1.5" onChange={(e) => setFiles((prev) => ({ ...prev, [doc.tipe]: e.target.files[0] }))} />
-                                        {uploaded && <span className="mt-1 block text-xs text-emerald-700">Sudah ada: {uploaded.nama_asli}</span>}
-                                        {files[doc.tipe] && <span className="mt-1 block text-xs text-primary">Siap unggah: {files[doc.tipe].name}</span>}
-                                    </label>
+                                    <FilePondField
+                                        key={doc.tipe}
+                                        label={doc.label}
+                                        file={files[doc.tipe] || null}
+                                        existingLabel={uploaded?.nama_asli}
+                                        onFile={(file) => setFiles((prev) => ({ ...prev, [doc.tipe]: file }))}
+                                    />
                                 );
                             })}
                         </div>

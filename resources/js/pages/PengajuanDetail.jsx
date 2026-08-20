@@ -3,10 +3,10 @@ import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import PengajuanForm from '@/pages/PengajuanForm';
+import FilePondField from '@/components/FilePondField';
 
 const STATUS_VARIANT = {
     draft: 'secondary',
@@ -287,14 +287,24 @@ export default function PengajuanDetail({ pengajuanPublicId }) {
 
                     {canUploadTtd && (
                         <div className="mt-5 grid gap-3 md:grid-cols-2">
-                            <label className="rounded-xl border border-dashed p-4 text-sm">
-                                Kontrak sudah TTD
-                                <Input type="file" accept=".jpg,.jpeg,.png,.pdf" className="mt-2 h-auto py-1.5" onChange={(e) => uploadTtd('signed_kontrak', e.target.files[0])} />
-                            </label>
-                            <label className="rounded-xl border border-dashed p-4 text-sm">
-                                PO sudah TTD
-                                <Input type="file" accept=".jpg,.jpeg,.png,.pdf" className="mt-2 h-auto py-1.5" onChange={(e) => uploadTtd('signed_po', e.target.files[0])} />
-                            </label>
+                            <FilePondField
+                                label="Kontrak sudah TTD"
+                                existingLabel={(data.dokumens || []).find((doc) => doc.tipe === 'signed_kontrak')?.nama_asli}
+                                onFile={(file) => {
+                                    if (file) {
+                                        uploadTtd('signed_kontrak', file);
+                                    }
+                                }}
+                            />
+                            <FilePondField
+                                label="PO sudah TTD"
+                                existingLabel={(data.dokumens || []).find((doc) => doc.tipe === 'signed_po')?.nama_asli}
+                                onFile={(file) => {
+                                    if (file) {
+                                        uploadTtd('signed_po', file);
+                                    }
+                                }}
+                            />
                         </div>
                     )}
                 </CardContent>

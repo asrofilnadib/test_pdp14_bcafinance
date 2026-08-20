@@ -158,6 +158,26 @@ table.dataTable tbody tr:hover {
     background-color: #b42318 !important;
 }
 
+.filepond--root {
+    margin-bottom: 0;
+    font-family: inherit;
+}
+
+.filepond--panel-root {
+    background-color: #eef2f7;
+    border-radius: 12px;
+}
+
+.filepond--drop-label {
+    color: #475569;
+    font-size: 13px;
+}
+
+.filepond--label-action {
+    color: #102844;
+    text-decoration: underline;
+}
+
 @media print {
     .no-print {
         display: none !important;

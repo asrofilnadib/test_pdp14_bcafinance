@@ -6,10 +6,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') — JKL Finance</title>
     @fonts
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/photoswipe.css">
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/jquery.dataTables.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/toastr/toastr.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/selectize/selectize.default.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/photoswipe/photoswipe.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/filepond/filepond.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/filepond/filepond-plugin-image-preview.min.css') }}">
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
 </head>
@@ -59,19 +61,40 @@
     <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-navy-950/50 lg:hidden"></div>
     <div id="page-loader"><div class="spinner"></div></div>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/umd/photoswipe.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/umd/photoswipe-lightbox.umd.min.js"></script>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/highcharts-more.js"></script>
-    <script src="https://code.highcharts.com/modules/funnel.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
-    <script src="https://code.highcharts.com/modules/export-data.js"></script>
-    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
+    <script src="{{ asset('vendor/toastr/toastr.min.js') }}"></script>
+    <script src="{{ asset('vendor/selectize/selectize.min.js') }}"></script>
+    <script src="{{ asset('vendor/highcharts/highcharts.js') }}"></script>
+    <script src="{{ asset('vendor/highcharts/exporting.js') }}"></script>
+    <script src="{{ asset('vendor/highcharts/export-data.js') }}"></script>
+    <script src="{{ asset('vendor/highcharts/accessibility.js') }}"></script>
+    <script src="{{ asset('vendor/filepond/filepond.min.js') }}"></script>
+    <script src="{{ asset('vendor/filepond/filepond-plugin-image-exif-orientation.min.js') }}"></script>
+    <script src="{{ asset('vendor/filepond/filepond-plugin-file-validate-size.min.js') }}"></script>
+    <script src="{{ asset('vendor/filepond/filepond-plugin-image-preview.min.js') }}"></script>
+    <script type="module">
+        import PhotoSwipeLightbox from '{{ asset('vendor/photoswipe/photoswipe-lightbox.esm.min.js') }}';
+        import PhotoSwipe from '{{ asset('vendor/photoswipe/photoswipe.esm.min.js') }}';
+        window.PhotoSwipeLightbox = PhotoSwipeLightbox;
+        window.PhotoSwipe = PhotoSwipe;
+    </script>
+    <script>
+        if (window.FilePond && !window.__jklFilePondReady) {
+            if (window.FilePondPluginImageExifOrientation) {
+                FilePond.registerPlugin(FilePondPluginImageExifOrientation);
+            }
+            if (window.FilePondPluginFileValidateSize) {
+                FilePond.registerPlugin(FilePondPluginFileValidateSize);
+            }
+            if (window.FilePondPluginImagePreview) {
+                FilePond.registerPlugin(FilePondPluginImagePreview);
+            }
+            FilePond.setOptions({ credits: false });
+            window.__jklFilePondReady = true;
+        }
+    </script>
     @php
         $authUser = [
             'id' => auth()->id(),
