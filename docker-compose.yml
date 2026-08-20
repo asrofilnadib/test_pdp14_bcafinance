@@ -1,0 +1,51 @@
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: pdpbcaf
+      MYSQL_USER: pdpbcaf
+      MYSQL_PASSWORD: pdpbcaf
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      APP_NAME: "JKL Finance"
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: base64:PO6ZKCA5V5t7WgrEj6b1aRztk9tWLES9HkCDJNFOTzo=
+      APP_URL: http://localhost:8000
+      APP_LOCALE: id
+      APP_FALLBACK_LOCALE: id
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: pdpbcaf
+      DB_USERNAME: pdpbcaf
+      DB_PASSWORD: pdpbcaf
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+      LOG_CHANNEL: stderr
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
