@@ -23,6 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (page === 'pengajuan-detail') {
-        root.render(<PengajuanDetail pengajuanId={el.dataset.id} />);
+        root.render(<PengajuanDetail pengajuanPublicId={el.dataset.publicId} />);
     }
 });

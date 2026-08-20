@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'nomor',
@@ -37,11 +38,17 @@ class Pengajuan extends Model
     use SoftDeletes;
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_SUBMITTED = 'submitted';
+
     public const STATUS_APPROVED = 'approved';
+
     public const STATUS_REJECTED = 'rejected';
+
     public const STATUS_PRINTED = 'printed';
+
     public const STATUS_SIGNED = 'signed';
+
     public const STATUS_DISBURSED = 'disbursed';
 
     public const STATUSES = [
@@ -53,6 +60,29 @@ class Pengajuan extends Model
         self::STATUS_SIGNED,
         self::STATUS_DISBURSED,
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Pengajuan $pengajuan): void {
+            if (blank($pengajuan->public_id)) {
+                $pengajuan->public_id = static::generatePublicId();
+            }
+        });
+    }
+
+    public static function generatePublicId(): string
+    {
+        do {
+            $publicId = Str::lower(Str::random(6));
+        } while (static::withTrashed()->where('public_id', $publicId)->exists());
+
+        return $publicId;
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'public_id';
+    }
 
     protected function casts(): array
     {

@@ -35,11 +35,11 @@ function money(value) {
     return Number(value);
 }
 
-export default function PengajuanForm({ mode, pengajuanId, onSaved, onSubmitted }) {
+export default function PengajuanForm({ mode, pengajuanPublicId, onSaved, onSubmitted }) {
     const [step, setStep] = useState(0);
     const [form, setForm] = useState(emptyForm);
     const [dealers, setDealers] = useState([]);
-    const [id, setId] = useState(pengajuanId || '');
+    const [publicId, setPublicId] = useState(pengajuanPublicId || '');
     const [dokumens, setDokumens] = useState([]);
     const [files, setFiles] = useState({});
     const user = window.authUser || {};
@@ -66,19 +66,19 @@ export default function PengajuanForm({ mode, pengajuanId, onSaved, onSubmitted 
         setStep(0);
         setFiles({});
         setDokumens([]);
-        setId(pengajuanId || '');
+        setPublicId(pengajuanPublicId || '');
         setForm(emptyForm);
 
-        if (mode !== 'edit' || !pengajuanId) {
+        if (mode !== 'edit' || !pengajuanPublicId) {
             return undefined;
         }
 
         window.showLoader();
         window.$.ajax({
-            url: `/pengajuan/${pengajuanId}/json`,
+            url: `/pengajuan/${pengajuanPublicId}/json`,
             type: 'GET',
             success: (res) => {
-                setId(String(res.id));
+                setPublicId(res.public_id);
                 setForm({
                     dealer_id: res.dealer_id ? String(res.dealer_id) : '',
                     konsumen_nama: res.konsumen_nama || '',
@@ -103,7 +103,7 @@ export default function PengajuanForm({ mode, pengajuanId, onSaved, onSubmitted 
         });
 
         return undefined;
-    }, [mode, pengajuanId]);
+    }, [mode, pengajuanPublicId]);
 
     const setField = (name, value) => setForm((prev) => ({ ...prev, [name]: value }));
 
@@ -113,7 +113,7 @@ export default function PengajuanForm({ mode, pengajuanId, onSaved, onSubmitted 
         angsuran,
     });
 
-    const uploadQueued = (pengajuanIdValue) => {
+    const uploadQueued = (savedPublicId) => {
         const jobs = Object.entries(files).filter(([, file]) => file);
         if (jobs.length === 0) {
             return window.$.Deferred().resolve().promise();
@@ -124,7 +124,7 @@ export default function PengajuanForm({ mode, pengajuanId, onSaved, onSubmitted 
             data.append('tipe', tipe);
             data.append('file', file);
             return window.$.ajax({
-                url: `/pengajuan/${pengajuanIdValue}/dokumen`,
+                url: `/pengajuan/${savedPublicId}/dokumen`,
                 type: 'POST',
                 data,
                 processData: false,
@@ -135,24 +135,24 @@ export default function PengajuanForm({ mode, pengajuanId, onSaved, onSubmitted 
 
     const saveDraft = (thenSubmit = false) => {
         window.showLoader();
-        const isUpdate = Boolean(id);
+        const isUpdate = Boolean(publicId);
         window.$.ajax({
-            url: isUpdate ? `/pengajuan/${id}` : '/pengajuan',
+            url: isUpdate ? `/pengajuan/${publicId}` : '/pengajuan',
             type: isUpdate ? 'PUT' : 'POST',
             data: payload(),
             success: (res) => {
-                const savedId = res.id || id;
-                setId(String(savedId));
-                uploadQueued(savedId)
+                const savedPublicId = res.public_id || publicId;
+                setPublicId(savedPublicId);
+                uploadQueued(savedPublicId)
                     .done(() => {
                         if (thenSubmit) {
                             window.$.ajax({
-                                url: `/pengajuan/${savedId}/submit`,
+                                url: `/pengajuan/${savedPublicId}/submit`,
                                 type: 'POST',
                                 success: (submitRes) => {
                                     window.hideLoader();
                                     window.toastr.success(submitRes.message);
-                                    if (onSubmitted) onSubmitted(savedId);
+                                    if (onSubmitted) onSubmitted(savedPublicId);
                                 },
                                 error: (xhr) => {
                                     window.hideLoader();
@@ -163,7 +163,7 @@ export default function PengajuanForm({ mode, pengajuanId, onSaved, onSubmitted 
                         }
                         window.hideLoader();
                         window.toastr.success(res.message);
-                        if (onSaved) onSaved(savedId);
+                        if (onSaved) onSaved(savedPublicId);
                     })
                     .fail((xhr) => {
                         window.hideLoader();

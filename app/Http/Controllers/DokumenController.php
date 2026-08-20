@@ -13,9 +13,9 @@ use Illuminate\Support\Facades\Storage;
 
 class DokumenController extends Controller
 {
-    public function store(UploadDokumenRequest $request, int $id)
+    public function store(UploadDokumenRequest $request, string $public_id)
     {
-        $pengajuan = $this->findAccessible($id);
+        $pengajuan = $this->findAccessible($public_id);
         $user = Auth::user();
         $tipe = $request->input('tipe');
 
@@ -149,9 +149,11 @@ class DokumenController extends Controller
         return $query;
     }
 
-    private function findAccessible(int $id): Pengajuan
+    private function findAccessible(string $publicId): Pengajuan
     {
-        $pengajuan = $this->scopedQuery(Auth::user())->find($id);
+        $pengajuan = $this->scopedQuery(Auth::user())
+            ->where('public_id', $publicId)
+            ->first();
         if (! $pengajuan) {
             abort(404, 'Pengajuan tidak ditemukan.');
         }

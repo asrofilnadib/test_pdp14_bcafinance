@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +23,7 @@ function rupiah(value) {
     return `Rp ${Number(value).toLocaleString('id-ID')}`;
 }
 
-export default function PengajuanDetail({ pengajuanId }) {
+export default function PengajuanDetail({ pengajuanPublicId }) {
     const [data, setData] = useState(null);
     const [formOpen, setFormOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
@@ -31,7 +32,7 @@ export default function PengajuanDetail({ pengajuanId }) {
     const load = () => {
         window.showLoader();
         window.$.ajax({
-            url: `/pengajuan/${pengajuanId}/json`,
+            url: `/pengajuan/${pengajuanPublicId}/json`,
             type: 'GET',
             success: (res) => setData(res),
             error: window.ajaxError,
@@ -41,7 +42,7 @@ export default function PengajuanDetail({ pengajuanId }) {
 
     useEffect(() => {
         load();
-    }, [pengajuanId]);
+    }, [pengajuanPublicId]);
 
     useEffect(() => {
         if (!data || !window.PhotoSwipeLightbox || !window.PhotoSwipe) return undefined;
@@ -55,8 +56,23 @@ export default function PengajuanDetail({ pengajuanId }) {
     }, [data]);
 
     if (!data) {
-        return <Card><CardContent className="p-6 text-sm text-muted-foreground">Memuat detail...</CardContent></Card>;
+        return (
+            <div className="space-y-4">
+                <nav aria-label="Breadcrumb" className="text-sm">
+                    <ol className="flex flex-wrap items-center gap-1 text-slate-500">
+                        <li><a href="/dashboard" className="hover:text-navy-900">Dashboard</a></li>
+                        <li><ChevronRight className="h-3.5 w-3.5" /></li>
+                        <li><a href="/pengajuan" className="hover:text-navy-900">Pengajuan Kredit</a></li>
+                        <li><ChevronRight className="h-3.5 w-3.5" /></li>
+                        <li className="font-medium text-navy-900">Detail</li>
+                    </ol>
+                </nav>
+                <Card><CardContent className="p-6 text-sm text-muted-foreground">Memuat detail...</CardContent></Card>
+            </div>
+        );
     }
+
+    const publicId = data?.public_id || pengajuanPublicId;
 
     const canApprove = ['atasan_marketing', 'super_user'].includes(user.role) && data.status === 'submitted';
     const canPrint = ['admin_backoffice', 'super_user'].includes(user.role) && ['approved', 'printed'].includes(data.status);
@@ -91,7 +107,7 @@ export default function PengajuanDetail({ pengajuanId }) {
             confirmButtonText: 'Setujui',
             cancelButtonText: 'Batal',
         }).then((result) => {
-            if (result.isConfirmed) postAction(`/pengajuan/${data.id}/approve`, { catatan: result.value || '' });
+            if (result.isConfirmed) postAction(`/pengajuan/${publicId}/approve`, { catatan: result.value || '' });
         });
     };
 
@@ -106,13 +122,13 @@ export default function PengajuanDetail({ pengajuanId }) {
             confirmButtonText: 'Tolak',
             cancelButtonText: 'Batal',
         }).then((result) => {
-            if (result.isConfirmed) postAction(`/pengajuan/${data.id}/reject`, { catatan: result.value });
+            if (result.isConfirmed) postAction(`/pengajuan/${publicId}/reject`, { catatan: result.value });
         });
     };
 
     const printDoc = (path) => {
         window.$.ajax({
-            url: `/pengajuan/${data.id}/print`,
+            url: `/pengajuan/${publicId}/print`,
             type: 'POST',
             success: () => {
                 window.open(path, '_blank');
@@ -129,7 +145,7 @@ export default function PengajuanDetail({ pengajuanId }) {
         formData.append('file', file);
         window.showLoader();
         window.$.ajax({
-            url: `/pengajuan/${data.id}/dokumen`,
+            url: `/pengajuan/${publicId}/dokumen`,
             type: 'POST',
             data: formData,
             processData: false,
@@ -155,14 +171,14 @@ export default function PengajuanDetail({ pengajuanId }) {
             confirmButtonText: 'Cairkan',
             cancelButtonText: 'Batal',
         }).then((result) => {
-            if (result.isConfirmed) postAction(`/pengajuan/${data.id}/disburse`);
+            if (result.isConfirmed) postAction(`/pengajuan/${publicId}/disburse`);
         });
     };
 
     const removeDraft = () => {
         window.showLoader();
         window.$.ajax({
-            url: `/pengajuan/${data.id}`,
+            url: `/pengajuan/${publicId}`,
             type: 'DELETE',
             success: (res) => {
                 window.toastr.success(res.message);
@@ -177,6 +193,15 @@ export default function PengajuanDetail({ pengajuanId }) {
 
     return (
         <div className="space-y-4">
+            <nav aria-label="Breadcrumb" className="text-sm">
+                <ol className="flex flex-wrap items-center gap-1 text-slate-500">
+                    <li><a href="/dashboard" className="hover:text-navy-900">Dashboard</a></li>
+                    <li><ChevronRight className="h-3.5 w-3.5" /></li>
+                    <li><a href="/pengajuan" className="hover:text-navy-900">Pengajuan Kredit</a></li>
+                    <li><ChevronRight className="h-3.5 w-3.5" /></li>
+                    <li className="font-medium text-navy-900" aria-current="page">{data.nomor}</li>
+                </ol>
+            </nav>
             <Card>
                 <CardContent className="flex flex-col gap-3 p-5 lg:flex-row lg:items-center lg:justify-between">
                     <div>
@@ -195,8 +220,8 @@ export default function PengajuanDetail({ pengajuanId }) {
                         )}
                         {canPrint && (
                             <>
-                                <Button type="button" onClick={() => printDoc(`/pengajuan/${data.id}/cetak-kontrak`)}>Cetak Kontrak</Button>
-                                <Button type="button" variant="gold" onClick={() => printDoc(`/pengajuan/${data.id}/cetak-po`)}>Cetak PO</Button>
+                                <Button type="button" onClick={() => printDoc(`/pengajuan/${publicId}/cetak-kontrak`)}>Cetak Kontrak</Button>
+                                <Button type="button" variant="gold" onClick={() => printDoc(`/pengajuan/${publicId}/cetak-po`)}>Cetak PO</Button>
                             </>
                         )}
                         {canDisburse && <Button type="button" onClick={disburse}>Pencairan Dana</Button>}
@@ -283,9 +308,9 @@ export default function PengajuanDetail({ pengajuanId }) {
                     </DialogHeader>
                     {formOpen && (
                         <PengajuanForm
-                            key={`edit-${data.id}`}
+                            key={`edit-${data.public_id}`}
                             mode="edit"
-                            pengajuanId={String(data.id)}
+                            pengajuanPublicId={data.public_id}
                             onSaved={() => load()}
                             onSubmitted={() => {
                                 setFormOpen(false);

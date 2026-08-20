@@ -26,21 +26,21 @@ class PengajuanController extends Controller
         return redirect('/pengajuan');
     }
 
-    public function edit(int $id)
+    public function edit(string $public_id)
     {
         return redirect('/pengajuan');
     }
 
-    public function show(int $id)
+    public function show(string $public_id)
     {
-        $this->findAccessible($id);
+        $this->findAccessible($public_id);
 
-        return view('pengajuan.show', ['pengajuanId' => $id]);
+        return view('pengajuan.show', ['pengajuanPublicId' => $public_id]);
     }
 
-    public function json(int $id)
+    public function json(string $public_id)
     {
-        $pengajuan = $this->findAccessible($id);
+        $pengajuan = $this->findAccessible($public_id);
         $pengajuan->load(['dealer', 'marketing', 'approver', 'disburser', 'dokumens']);
 
         return response()->json($this->transform($pengajuan));
@@ -102,6 +102,7 @@ class PengajuanController extends Controller
             $data = $rows->map(function (Pengajuan $row) use ($user) {
                 return [
                     'id' => $row->id,
+                    'public_id' => $row->public_id,
                     'nomor' => e($row->nomor),
                     'konsumen' => e($row->konsumen_nama),
                     'nik' => e($row->konsumen_nik),
@@ -145,7 +146,7 @@ class PengajuanController extends Controller
 
             return response()->json([
                 'message' => 'Pengajuan tersimpan sebagai draft.',
-                'id' => $pengajuan->id,
+                'public_id' => $pengajuan->public_id,
                 'nomor' => $pengajuan->nomor,
             ], 201);
         } catch (\Throwable $e) {
@@ -156,9 +157,9 @@ class PengajuanController extends Controller
         }
     }
 
-    public function update(UpdatePengajuanRequest $request, int $id)
+    public function update(UpdatePengajuanRequest $request, string $public_id)
     {
-        $pengajuan = $this->findAccessible($id);
+        $pengajuan = $this->findAccessible($public_id);
 
         if (! $pengajuan->canEdit() || ! $this->ownsDraft($pengajuan, Auth::user())) {
             return response()->json(['message' => 'Pengajuan ini tidak dapat diubah.'], 403);
@@ -179,7 +180,7 @@ class PengajuanController extends Controller
 
             DB::commit();
 
-            return response()->json(['message' => 'Pengajuan berhasil diperbarui.', 'id' => $pengajuan->id]);
+            return response()->json(['message' => 'Pengajuan berhasil diperbarui.', 'public_id' => $pengajuan->public_id]);
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Update pengajuan gagal: '.$e->getMessage());
@@ -188,9 +189,9 @@ class PengajuanController extends Controller
         }
     }
 
-    public function submit(int $id)
+    public function submit(string $public_id)
     {
-        $pengajuan = $this->findAccessible($id);
+        $pengajuan = $this->findAccessible($public_id);
 
         if (! $pengajuan->canEdit() || ! $this->ownsDraft($pengajuan, Auth::user())) {
             return response()->json(['message' => 'Pengajuan ini tidak dapat diajukan.'], 403);
@@ -244,13 +245,13 @@ class PengajuanController extends Controller
         }
     }
 
-    public function approve(Request $request, int $id)
+    public function approve(Request $request, string $public_id)
     {
         if (! Auth::user()->canApprove()) {
             return response()->json(['message' => 'Anda tidak memiliki akses.'], 403);
         }
 
-        $pengajuan = $this->findAccessible($id);
+        $pengajuan = $this->findAccessible($public_id);
         if ($pengajuan->status !== Pengajuan::STATUS_SUBMITTED) {
             return response()->json(['message' => 'Hanya pengajuan yang menunggu approval yang dapat disetujui.'], 422);
         }
@@ -271,7 +272,7 @@ class PengajuanController extends Controller
         }
     }
 
-    public function reject(Request $request, int $id)
+    public function reject(Request $request, string $public_id)
     {
         if (! Auth::user()->canApprove()) {
             return response()->json(['message' => 'Anda tidak memiliki akses.'], 403);
@@ -288,7 +289,7 @@ class PengajuanController extends Controller
             ], 422);
         }
 
-        $pengajuan = $this->findAccessible($id);
+        $pengajuan = $this->findAccessible($public_id);
         if ($pengajuan->status !== Pengajuan::STATUS_SUBMITTED) {
             return response()->json(['message' => 'Hanya pengajuan yang menunggu approval yang dapat ditolak.'], 422);
         }
@@ -309,13 +310,13 @@ class PengajuanController extends Controller
         }
     }
 
-    public function markPrinted(int $id)
+    public function markPrinted(string $public_id)
     {
         if (! Auth::user()->canPrintOrDisburse()) {
             return response()->json(['message' => 'Anda tidak memiliki akses.'], 403);
         }
 
-        $pengajuan = $this->findAccessible($id);
+        $pengajuan = $this->findAccessible($public_id);
         if (! in_array($pengajuan->status, [Pengajuan::STATUS_APPROVED, Pengajuan::STATUS_PRINTED], true)) {
             return response()->json(['message' => 'Dokumen hanya dapat dicetak setelah pengajuan disetujui.'], 422);
         }
@@ -333,29 +334,29 @@ class PengajuanController extends Controller
         }
     }
 
-    public function cetakKontrak(int $id)
+    public function cetakKontrak(string $public_id)
     {
-        $pengajuan = $this->findAccessible($id);
+        $pengajuan = $this->findAccessible($public_id);
         $pengajuan->load(['dealer', 'marketing']);
 
         return view('pengajuan.cetak-kontrak', ['pengajuan' => $pengajuan]);
     }
 
-    public function cetakPo(int $id)
+    public function cetakPo(string $public_id)
     {
-        $pengajuan = $this->findAccessible($id);
+        $pengajuan = $this->findAccessible($public_id);
         $pengajuan->load(['dealer', 'marketing']);
 
         return view('pengajuan.cetak-po', ['pengajuan' => $pengajuan]);
     }
 
-    public function disburse(int $id)
+    public function disburse(string $public_id)
     {
         if (! Auth::user()->canPrintOrDisburse()) {
             return response()->json(['message' => 'Anda tidak memiliki akses.'], 403);
         }
 
-        $pengajuan = $this->findAccessible($id);
+        $pengajuan = $this->findAccessible($public_id);
         $pengajuan->load('dokumens');
 
         if ($pengajuan->status !== Pengajuan::STATUS_SIGNED) {
@@ -377,9 +378,9 @@ class PengajuanController extends Controller
         }
     }
 
-    public function destroy(int $id)
+    public function destroy(string $public_id)
     {
-        $pengajuan = $this->findAccessible($id);
+        $pengajuan = $this->findAccessible($public_id);
 
         if ($pengajuan->status !== Pengajuan::STATUS_DRAFT || ! $this->ownsDraft($pengajuan, Auth::user())) {
             return response()->json(['message' => 'Hanya draft milik Anda yang dapat dihapus.'], 403);
@@ -439,9 +440,11 @@ class PengajuanController extends Controller
         return $query;
     }
 
-    private function findAccessible(int $id): Pengajuan
+    private function findAccessible(string $publicId): Pengajuan
     {
-        $pengajuan = $this->scopedQuery(Auth::user())->find($id);
+        $pengajuan = $this->scopedQuery(Auth::user())
+            ->where('public_id', $publicId)
+            ->first();
         if (! $pengajuan) {
             abort(404, 'Pengajuan tidak ditemukan.');
         }
@@ -470,6 +473,7 @@ class PengajuanController extends Controller
     {
         return [
             'id' => $pengajuan->id,
+            'public_id' => $pengajuan->public_id,
             'nomor' => $pengajuan->nomor,
             'status' => $pengajuan->status,
             'status_label' => Pengajuan::statusLabel($pengajuan->status),

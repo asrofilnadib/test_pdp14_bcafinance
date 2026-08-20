@@ -25,19 +25,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/pengajuan/datatable', [PengajuanController::class, 'datatable']);
     Route::get('/pengajuan/create', [PengajuanController::class, 'create']);
     Route::post('/pengajuan', [PengajuanController::class, 'store']);
-    Route::get('/pengajuan/{id}/json', [PengajuanController::class, 'json']);
-    Route::get('/pengajuan/{id}/edit', [PengajuanController::class, 'edit']);
-    Route::get('/pengajuan/{id}/cetak-kontrak', [PengajuanController::class, 'cetakKontrak']);
-    Route::get('/pengajuan/{id}/cetak-po', [PengajuanController::class, 'cetakPo']);
-    Route::get('/pengajuan/{id}', [PengajuanController::class, 'show']);
-    Route::put('/pengajuan/{id}', [PengajuanController::class, 'update']);
-    Route::delete('/pengajuan/{id}', [PengajuanController::class, 'destroy']);
-    Route::post('/pengajuan/{id}/submit', [PengajuanController::class, 'submit']);
-    Route::post('/pengajuan/{id}/approve', [PengajuanController::class, 'approve']);
-    Route::post('/pengajuan/{id}/reject', [PengajuanController::class, 'reject']);
-    Route::post('/pengajuan/{id}/print', [PengajuanController::class, 'markPrinted']);
-    Route::post('/pengajuan/{id}/disburse', [PengajuanController::class, 'disburse']);
-    Route::post('/pengajuan/{id}/dokumen', [DokumenController::class, 'store']);
+    Route::where(['public_id' => '[a-z0-9]{6}'])->group(function () {
+        Route::get('/pengajuan/{public_id}/json', [PengajuanController::class, 'json']);
+        Route::get('/pengajuan/{public_id}/edit', [PengajuanController::class, 'edit']);
+        Route::get('/pengajuan/{public_id}/cetak-kontrak', [PengajuanController::class, 'cetakKontrak']);
+        Route::get('/pengajuan/{public_id}/cetak-po', [PengajuanController::class, 'cetakPo']);
+        Route::get('/pengajuan/{public_id}', [PengajuanController::class, 'show']);
+        Route::put('/pengajuan/{public_id}', [PengajuanController::class, 'update']);
+        Route::delete('/pengajuan/{public_id}', [PengajuanController::class, 'destroy']);
+        Route::post('/pengajuan/{public_id}/submit', [PengajuanController::class, 'submit']);
+        Route::post('/pengajuan/{public_id}/approve', [PengajuanController::class, 'approve']);
+        Route::post('/pengajuan/{public_id}/reject', [PengajuanController::class, 'reject']);
+        Route::post('/pengajuan/{public_id}/print', [PengajuanController::class, 'markPrinted']);
+        Route::post('/pengajuan/{public_id}/disburse', [PengajuanController::class, 'disburse']);
+        Route::post('/pengajuan/{public_id}/dokumen', [DokumenController::class, 'store']);
+    });
 
     Route::get('/dokumen/{id}/file', [DokumenController::class, 'file']);
     Route::delete('/dokumen/{id}', [DokumenController::class, 'destroy']);

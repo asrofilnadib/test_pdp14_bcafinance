@@ -42,9 +42,9 @@ export default function PengajuanList({ canCreate }) {
         setFormOpen(true);
     };
 
-    const openEdit = (id) => {
+    const openEdit = (publicId) => {
         setFormMode('edit');
-        setFormId(String(id));
+        setFormId(String(publicId));
         setFormOpen(true);
     };
 
@@ -52,7 +52,7 @@ export default function PengajuanList({ canCreate }) {
         if (!deleteTarget) return;
         window.showLoader();
         window.$.ajax({
-            url: `/pengajuan/${deleteTarget.id}`,
+            url: `/pengajuan/${deleteTarget.public_id}`,
             type: 'DELETE',
             success: (res) => {
                 window.hideLoader();
@@ -96,16 +96,16 @@ export default function PengajuanList({ canCreate }) {
                 },
                 { data: 'tanggal' },
                 {
-                    data: 'id',
+                    data: 'public_id',
                     orderable: false,
                     searchable: false,
-                    render: (id, type, row) => {
-                        let html = `<div class="flex flex-wrap gap-2"><a class="text-sm font-semibold text-primary" href="/pengajuan/${id}">Detail</a>`;
+                    render: (publicId, type, row) => {
+                        let html = `<div class="flex flex-wrap gap-2"><a class="text-sm font-semibold text-primary" href="/pengajuan/${publicId}">Detail</a>`;
                         if (row.can_edit) {
-                            html += `<button type="button" class="js-edit text-sm font-semibold text-gold-600" data-id="${id}">Ubah</button>`;
+                            html += `<button type="button" class="js-edit text-sm font-semibold text-gold-600" data-public-id="${publicId}">Ubah</button>`;
                         }
                         if (row.can_delete) {
-                            html += `<button type="button" class="js-delete text-sm font-semibold text-red-600" data-id="${id}" data-nama="${row.konsumen}">Hapus</button>`;
+                            html += `<button type="button" class="js-delete text-sm font-semibold text-red-600" data-public-id="${publicId}" data-nama="${row.konsumen}">Hapus</button>`;
                         }
                         html += '</div>';
                         return html;
@@ -126,13 +126,13 @@ export default function PengajuanList({ canCreate }) {
         dtRef.current = dt;
 
         $table.on('click', '.js-edit', function () {
-            openEdit(window.$(this).data('id'));
+            openEdit(window.$(this).attr('data-public-id'));
         });
 
         $table.on('click', '.js-delete', function () {
             setDeleteTarget({
-                id: window.$(this).data('id'),
-                nama: window.$(this).data('nama'),
+                public_id: window.$(this).attr('data-public-id'),
+                nama: window.$(this).attr('data-nama'),
             });
             setDeleteOpen(true);
         });
@@ -201,7 +201,7 @@ export default function PengajuanList({ canCreate }) {
                         <PengajuanForm
                             key={`${formMode}-${formId || 'new'}`}
                             mode={formMode}
-                            pengajuanId={formId}
+                            pengajuanPublicId={formId}
                             onSaved={() => reloadTable()}
                             onSubmitted={() => {
                                 setFormOpen(false);
