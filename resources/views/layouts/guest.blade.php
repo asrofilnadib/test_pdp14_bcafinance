@@ -7,6 +7,7 @@
     <title>@yield('title', 'Masuk') — JKL Finance</title>
     @fonts
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
 </head>
 <body class="min-h-screen bg-navy-950">
