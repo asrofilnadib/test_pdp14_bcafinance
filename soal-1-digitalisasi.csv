@@ -1,0 +1,10 @@
+Langkah,Bagian Proses,Manual Lama,Digitalisasi,Kategori
+1,Deal pembelian kendaraan,"Tatap muka di dealer; KTP, SPK, dan bukti bayar fisik",Deal tetap di dealer; dokumen di-scan lalu diunggah ke sistem,Hybrid
+2,Info konsumen kredit,Sales Dealer kirim info ke Marketing secara lisan atau kertas,Input info konsumen langsung ke sistem,Digital
+3,Collect data konsumen,Marketing hubungi konsumen dan catat data di kertas,"Form web: data konsumen, kendaraan, dan pinjaman",Digital
+4,Submit pengajuan,"Form aplikasi kertas plus fotokopi KTP, bukti bayar, dan KK","Upload dokumen ke sistem, lalu submit pengajuan",Digital
+5,Approval atasan,Paraf atau tanda tangan pada berkas fisik,Approve atau reject di sistem beserta catatan,Digital
+6,Printing Kontrak dan PO,Ketik dan print ulang secara manual,Generate dari data pengajuan lalu cetak,Hybrid
+7,TTD keliling,Keliling fisik Konsumen; Marketing; dan Dealer,TTD basah tetap di lapangan; status dilacak di sistem,Hybrid
+8,Berkas sudah TTD,Kumpulkan dan antar berkas fisik ke backoffice,Upload scan Kontrak dan PO yang sudah ditandatangani,Digital
+9,Pencairan dana,Pencairan tanpa jejak sistem yang rapi,"Status disbursed tercatat beserta petugas dan waktu",Digital
